@@ -29,9 +29,14 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<ProductModelProductDescription> ProductModelProductDescriptions { get; set; } = null!;
         public virtual DbSet<SalesOrderDetail> SalesOrderDetails { get; set; } = null!;
         public virtual DbSet<SalesOrderHeader> SalesOrderHeaders { get; set; } = null!;
-        public virtual DbSet<VGetAllCategory> VGetAllCategories { get; set; } = null!;
+       
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
+
+        #region SQL Views
+
+        public virtual DbSet<VGetAllCategory> VGetAllCategories { get; set; } = null!;
+        #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -699,6 +704,8 @@ namespace EFCoreTopics.Database.Data
                     .HasConstraintName("FK_SalesOrderHeader_Address_ShipTo_AddressID");
             });
 
+            #region Views
+
             modelBuilder.Entity<VGetAllCategory>(entity =>
             {
                 entity.HasNoKey();
@@ -711,6 +718,8 @@ namespace EFCoreTopics.Database.Data
 
                 entity.Property(e => e.ProductCategoryName).HasMaxLength(50);
             });
+
+            #endregion
 
             modelBuilder.Entity<VProductAndDescription>(entity =>
             {

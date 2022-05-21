@@ -1,6 +1,7 @@
 ﻿using EFCoreTopics.Database.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -29,6 +30,18 @@ namespace EFCoreTopics.Controllers
         public async Task<IActionResult> GetInterpolatedAddresses(int id)
         {
             var result = await _db.GetAddressInterpolatedAsync(id);
+
+            return Ok(result);
+        }
+
+        #endregion
+
+        #region SQL Views
+
+        [HttpGet("GetCategories")]
+        public async Task<IActionResult> GetCategories(int categoryId)
+        {
+            var result = await _db.VGetAllCategories.Where(c => c.ProductCategoryId > categoryId).ToListAsync();
 
             return Ok(result);
         }
