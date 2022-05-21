@@ -49,6 +49,11 @@ namespace EFCoreTopics.Database.Models
         /// </summary>
         public DateTime ModifiedDate { get; set; }
 
+        /// <summary>
+        /// Defines a search term with computed columns
+        /// </summary>
+        public string SearchTerm { get; private set; }
+
         public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; }
         public virtual ICollection<SalesOrderHeader> SalesOrderHeaderBillToAddresses { get; set; }
         public virtual ICollection<SalesOrderHeader> SalesOrderHeaderShipToAddresses { get; set; }

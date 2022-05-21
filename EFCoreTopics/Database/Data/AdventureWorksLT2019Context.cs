@@ -93,6 +93,13 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.StateProvince)
                     .HasMaxLength(50)
                     .HasComment("Name of state or province.");
+
+                #region Computed Column
+
+                entity.Property(e => e.SearchTerm).HasComputedColumnSql("[City]+','+[PostalCode]");
+
+                #endregion
+
             });
 
             modelBuilder.Entity<BuildVersion>(entity =>
