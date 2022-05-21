@@ -1,6 +1,7 @@
 ﻿using EFCoreTopics.Database.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -31,6 +32,18 @@ namespace EFCoreTopics.Controllers
             var result = await _db.GetAddressInterpolatedAsync(id);
 
             return Ok(result);
+        }
+
+        #endregion
+
+        #region Get Customer Using DB Functions
+
+        [HttpGet("GetCustomer")]
+        public async Task<IActionResult> GetCustomer(int customerId)
+        {
+            var customer =await _db.GetCustomer(customerId).FirstOrDefaultAsync();
+
+            return Ok(customer);
         }
 
         #endregion

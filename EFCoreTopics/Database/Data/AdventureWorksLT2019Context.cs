@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EFCoreTopics.Database.FunctionModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
@@ -792,6 +793,15 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
 
+            #region DB Function
+
+            modelBuilder
+                .HasDbFunction(typeof(AdventureWorksLContext).GetMethod(nameof(GetCustomer), new[] { typeof(int) }) ?? null)
+                .HasName("ufnGetCustomerInformation");
+
+            modelBuilder.Entity<GetCustomerModel>().HasNoKey();
+            #endregion
+
             OnModelCreatingPartial(modelBuilder);
         }
 
@@ -806,6 +816,13 @@ namespace EFCoreTopics.Database.Data
 
         public async Task<List<Address>> GetAddressInterpolatedAsync(int id) => await this.Addresses
             .FromSqlInterpolated($"Select * From [SalesLT].[Address] where [AddressID]>{id}").ToListAsync();
+
+        #endregion
+
+        #region DefiningFunction
+
+        public IQueryable<GetCustomerModel> GetCustomer(int CustomerId)
+            => FromExpression(() => GetCustomer(CustomerId));
 
         #endregion
 
