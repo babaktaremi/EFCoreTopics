@@ -1,6 +1,8 @@
 ﻿using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -31,6 +33,28 @@ namespace EFCoreTopics.Controllers
             var result = await _db.GetAddressInterpolatedAsync(id);
 
             return Ok(result);
+        }
+
+        #endregion
+
+        #region Change Tracker Switch
+
+        [HttpPost("UpdateAddress")]
+        public async Task<IActionResult> UpdateAddress()
+        {
+            _db.ChangeTracker.AutoDetectChangesEnabled = false;
+
+            var addresses = await _db.Addresses.ToListAsync();
+
+            foreach (var address in addresses.Where(address => address.AddressId % 2 == 0))
+            {
+                _db.Entry(address).State = EntityState.Modified;
+                address.City = "Tehran";
+               
+            }
+
+            await _db.SaveChangesAsync();
+            return Ok();
         }
 
         #endregion
