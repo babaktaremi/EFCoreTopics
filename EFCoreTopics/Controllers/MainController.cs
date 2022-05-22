@@ -33,6 +33,14 @@ namespace EFCoreTopics.Controllers
             return Ok(result);
         }
 
+        [HttpPost("UpdateCity")]
+        public async Task<IActionResult> UpdateCity(int id, string city)
+        {
+            var result = await _db.UpdateCityAddressAsync(id, city);
+
+            return Ok(result);
+        }
+
         #endregion
     }
 }

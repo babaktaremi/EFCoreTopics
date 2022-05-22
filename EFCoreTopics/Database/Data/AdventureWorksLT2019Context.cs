@@ -807,6 +807,10 @@ namespace EFCoreTopics.Database.Data
         public async Task<List<Address>> GetAddressInterpolatedAsync(int id) => await this.Addresses
             .FromSqlInterpolated($"Select * From [SalesLT].[Address] where [AddressID]>{id}").ToListAsync();
 
+        public async Task<int> UpdateCityAddressAsync(int addressId, string city) =>
+            await base.Database.ExecuteSqlInterpolatedAsync(
+                $"Update [SalesLT].[Address] set [City]={city} where [AddressId]={addressId}");
+
         #endregion
 
     }
