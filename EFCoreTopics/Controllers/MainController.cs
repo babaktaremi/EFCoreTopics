@@ -41,6 +41,14 @@ namespace EFCoreTopics.Controllers
             return Ok(result);
         }
 
+        [HttpGet("GetCityAndProvince")]
+        public async Task<IActionResult> GetCityAndProvince()
+        {
+            var result = await _db.GetCitiesAndProvinceFromAddressAsync();
+
+            return Ok(result);
+        }
+
         #endregion
     }
 }

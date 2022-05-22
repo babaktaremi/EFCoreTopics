@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
+using EFCoreTopics.Database.QueryModels;
 
 namespace EFCoreTopics.Database.Data
 {
@@ -32,6 +33,7 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VGetAllCategory> VGetAllCategories { get; set; } = null!;
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
+        public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -792,6 +794,16 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
 
+            #region Performing Custom Query
+
+            modelBuilder.Entity<GetCityAndProvinceFromAddressModel>(e =>
+            {
+                e.HasNoKey();
+                e.Property(c => c.Id).HasColumnName("AddressId");
+            });
+
+            #endregion
+
             OnModelCreatingPartial(modelBuilder);
         }
 
@@ -810,6 +822,12 @@ namespace EFCoreTopics.Database.Data
         public async Task<int> UpdateCityAddressAsync(int addressId, string city) =>
             await base.Database.ExecuteSqlInterpolatedAsync(
                 $"Update [SalesLT].[Address] set [City]={city} where [AddressId]={addressId}");
+
+        public async Task<List<GetCityAndProvinceFromAddressModel>> GetCitiesAndProvinceFromAddressAsync()
+            =>await this.GetCityAndProvinceFromAddressModels
+                .FromSqlRaw(
+                    "Select [AddressID],[City],[StateProvince]  FROM [AdventureWorksLT2019].[SalesLT].[Address]")
+                .ToListAsync();
 
         #endregion
 
