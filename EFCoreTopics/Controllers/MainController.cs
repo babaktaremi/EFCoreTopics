@@ -46,11 +46,14 @@ namespace EFCoreTopics.Controllers
 
             var addresses = await _db.Addresses.ToListAsync();
 
-            foreach (var address in addresses.Where(address => address.AddressId % 2 == 0))
+            foreach (var address in addresses)
             {
-                _db.Entry(address).State = EntityState.Modified;
-                address.City = "Tehran";
-               
+                if (address.AddressId % 2 == 0)
+                {
+                    _db.Entry(address).State = EntityState.Modified;
+                    address.City = "Tehran";
+                }
+
             }
 
             await _db.SaveChangesAsync();
