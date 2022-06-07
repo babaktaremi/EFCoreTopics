@@ -1,3 +1,5 @@
+using BenchmarkDotNet.Running;
+using EFCoreTopics.Benchmarks;
 using EFCoreTopics.Database.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,5 +25,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
+BenchmarkRunner.Run<ChangeTrackerBenchmark>();
 app.Run();

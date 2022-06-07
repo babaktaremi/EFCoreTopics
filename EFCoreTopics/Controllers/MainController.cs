@@ -39,24 +39,21 @@ namespace EFCoreTopics.Controllers
 
         #region Change Tracker Switch
 
-        [HttpPost("UpdateAddress")]
-        public async Task<IActionResult> UpdateAddress()
+
+        [HttpPost("InsertManyAddress")]
+        public async Task<IActionResult> InsertManyAddress()
         {
-            _db.ChangeTracker.AutoDetectChangesEnabled = false;
-
-            var addresses = await _db.Addresses.ToListAsync();
-
-            foreach (var address in addresses)
+            for (int i = 0; i < 1000; i++)
             {
-                if (address.AddressId % 2 == 0)
+                _db.Addresses.Add(new Address()
                 {
-                    _db.Entry(address).State = EntityState.Modified;
-                    address.City = "Tehran";
-                }
-
+                    AddressLine2 = "Test2", City = $"Test{i}", StateProvince = $"Test_{i}", CountryRegion = "Iran",
+                    PostalCode = "1234",AddressLine1 = "Test1"
+                });
             }
 
             await _db.SaveChangesAsync();
+
             return Ok();
         }
 
