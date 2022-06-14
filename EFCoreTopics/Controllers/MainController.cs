@@ -77,7 +77,6 @@ namespace EFCoreTopics.Controllers
         public async Task<IActionResult> GetProductWithDistinctSize()
         {
             var products =await  _db.Products.ToListAsync();
-
             var distinctProducts = products.DistinctBy(c => c.Size).ToList(); 
 
             return Ok(distinctProducts);
@@ -92,6 +91,7 @@ namespace EFCoreTopics.Controllers
             var heavyProducts = await _db.Products.Where(c => c.Weight < maximumWeight && c.Weight> minimumWeight).ToListAsync();
 
             var redProducts = await _db.Products.Where(c => c.Color.Equals("Red")).ToListAsync();
+
 
             var result = redProducts.IntersectBy(heavyProducts.Select(c=>c.ProductId),product => product.ProductId);
             return Ok(result);
@@ -110,14 +110,13 @@ namespace EFCoreTopics.Controllers
         public async Task<IActionResult> GetNthFromLastProduct(int count)
         {
             var products = await _db.Products.OrderBy(c=>c.ProductId).ToListAsync();
-
             var result = products.ElementAt(^count);
 
             return Ok(result);
         }
 
         [HttpGet("GetRangeOfProducts")]
-        public async Task<IActionResult> GetRangeOfProducts(int skip, int take)
+        public IActionResult GetRangeOfProducts(int skip, int take)
         {
             //var products = await _db.Products.OrderBy(c => c.ProductId).Skip(skip).Take(take).ToListAsync();
 
