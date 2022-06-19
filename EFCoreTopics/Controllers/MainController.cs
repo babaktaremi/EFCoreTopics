@@ -1,6 +1,9 @@
 ﻿using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
+using EFCoreTopics.Database.ValueObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -47,6 +50,29 @@ namespace EFCoreTopics.Controllers
             var result = await _db.GetCitiesAndProvinceFromAddressAsync();
 
             return Ok(result);
+        }
+
+        #endregion
+
+        #region Conversion
+        [HttpPost("AddProductPrice")]
+        public async Task<IActionResult> AddProduct(string name, decimal price, MoneyType moneyType)
+        {
+            var product = new ProductPrice(Guid.NewGuid(), name, DateTime.Now, new Money(price, moneyType));
+
+            _db.ProductPrices.Add(product);
+
+            await _db.SaveChangesAsync();
+
+            return Ok(product.Id);
+        }
+
+        [HttpPost("GetProductPrice")]
+        public async Task<IActionResult> GetProductByPriceType(MoneyType money)
+        {
+            var products = await _db.ProductPrices.Where(c => c.Money.Unit == money).ToListAsync();
+
+            return Ok(products);
         }
 
         #endregion

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
 using EFCoreTopics.Database.QueryModels;
+using EFCoreTopics.Database.ValueObjects;
 
 namespace EFCoreTopics.Database.Data
 {
@@ -34,13 +36,14 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
+        public virtual DbSet<ProductPrice> ProductPrices { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
+               // optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
             }
         }
 
@@ -794,6 +797,18 @@ namespace EFCoreTopics.Database.Data
 
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
+
+            #region Conversion Configuration
+
+            //modelBuilder.Entity<ProductPrice>(entity =>
+            //{
+            //    entity.Property(c => c.Money).HasConversion(money => JsonSerializer.Serialize(money, (JsonSerializerOptions)null),
+            //        val => JsonSerializer.Deserialize<Money>(val, (JsonSerializerOptions)null));
+            //});
+
+
+            modelBuilder.Entity<ProductPrice>().OwnsOne(c => c.Money);
+            #endregion
 
             #region Performing Custom Query
 
