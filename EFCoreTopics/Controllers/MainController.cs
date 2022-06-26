@@ -1,6 +1,9 @@
-﻿using EFCoreTopics.Database.Data;
+﻿using System.Data;
+using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -50,5 +53,65 @@ namespace EFCoreTopics.Controllers
         }
 
         #endregion
+
+        [HttpPost("AddSomeProducts")]
+        public async Task<IActionResult> AddSomeProducts()
+        {
+            await using var transaction =await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            _db.Database.SetCommandTimeout(TimeSpan.FromSeconds(100));
+            try
+            {
+                
+
+                var productModel1 = new ProductModel()
+                    {  Name = $"New Custom Product 1 {Guid.NewGuid().ToString().Substring(10)}" };
+                var productModel2 = new ProductModel()
+                    { Name = $"New Custom Product 2 {Guid.NewGuid().ToString().Substring(10)}" };
+
+                var productDescription1 = new ProductDescription() { Description = $"New Description 1 {Guid.NewGuid().ToString().Substring(10)}" };
+                var productDescription2 = new ProductDescription() { Description = $"New Description 2 {Guid.NewGuid().ToString().Substring(10)}" };
+
+                _db.ProductModels.AddRange(productModel1,productModel2);
+                _db.ProductDescriptions.AddRange(productDescription1,productDescription2);
+                await _db.SaveChangesAsync();
+
+                await transaction.CreateSavepointAsync("Saving Product Models");
+
+                await Task.Delay(4_000);
+
+                var currentProductDescriptionCount = await _db.ProductModelProductDescriptions.CountAsync();
+
+                var productModelDescription1 = new ProductModelProductDescription()
+                {
+                    Culture = Guid.NewGuid().ToString().Substring(0, 2),
+                    ProductDescriptionId = productDescription1.ProductDescriptionId,
+                    ProductModelId = productModel1.ProductModelId
+                };
+
+                var productModelDescription2 = new ProductModelProductDescription()
+                {
+                    Culture = Guid.NewGuid().ToString().Substring(0, 2),
+                    ProductDescriptionId = productDescription2.ProductDescriptionId,
+                    ProductModelId = productModel2.ProductModelId
+                };
+
+                _db.ProductModelProductDescriptions.AddRange(productModelDescription1,productModelDescription2);
+                await _db.SaveChangesAsync();
+
+                var newProductDescriptionCount = await _db.ProductModelProductDescriptions.CountAsync();
+
+                if (newProductDescriptionCount != currentProductDescriptionCount + 2)
+                    await transaction.RollbackToSavepointAsync("Saving Product Models");
+
+                await transaction.CommitAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return Content(e.ToString());
+            }
+
+
+        }
     }
 }
