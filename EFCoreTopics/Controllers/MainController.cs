@@ -57,8 +57,8 @@ namespace EFCoreTopics.Controllers
         [HttpPost("AddSomeProducts")]
         public async Task<IActionResult> AddSomeProducts()
         {
-            await using var transaction =await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-            _db.Database.SetCommandTimeout(TimeSpan.FromSeconds(100));
+            await using var transaction =await _db.Database.BeginTransactionAsync(IsolationLevel.Snapshot);
+            //_db.Database.SetCommandTimeout(TimeSpan.FromSeconds(100));
             try
             {
                 
@@ -77,9 +77,10 @@ namespace EFCoreTopics.Controllers
 
                 await transaction.CreateSavepointAsync("Saving Product Models");
 
-                await Task.Delay(4_000);
-
+                
                 var currentProductDescriptionCount = await _db.ProductModelProductDescriptions.CountAsync();
+
+                await Task.Delay(10_000);
 
                 var productModelDescription1 = new ProductModelProductDescription()
                 {
@@ -112,6 +113,24 @@ namespace EFCoreTopics.Controllers
             }
 
 
+        }
+
+        [HttpGet("ProductModels")]
+        public async Task<IActionResult> GetProductModels()
+        {
+            var result = await _db.ProductModels.AsNoTracking().ToListAsync();
+
+            return Ok(result);
+        }
+
+        [HttpPost("DeleteSomeProductModelDescription")]
+        public async Task<IActionResult> DeleteSomeProductModelDescription()
+        {
+            var models = await _db.ProductModelProductDescriptions.Take(2).ToListAsync();
+
+            _db.ProductModelProductDescriptions.RemoveRange(models);
+            await _db.SaveChangesAsync();
+            return Ok();
         }
     }
 }
