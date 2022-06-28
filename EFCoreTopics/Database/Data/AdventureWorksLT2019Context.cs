@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EFCoreTopics.Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
@@ -40,7 +41,8 @@ namespace EFCoreTopics.Database.Data
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
+                optionsBuilder.AddInterceptors(new UseStoreProcedureInterceptor());
+                //optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using EFCoreTopics.Database.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -50,5 +51,15 @@ namespace EFCoreTopics.Controllers
         }
 
         #endregion
+
+        [HttpGet("GetProductsSp")]
+        public async Task<IActionResult> GetProductsSp()
+        {
+            var products = await _db.Products.AsNoTracking().TagWith("UseSp").ToListAsync();
+
+           // var products = await _db.Products.FromSqlRaw("EXEC [dbo].[ProductSP];").ToListAsync();
+
+            return Ok(products);
+        }
     }
 }

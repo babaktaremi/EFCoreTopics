@@ -1,3 +1,4 @@
+
 using EFCoreTopics.Database.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,5 +24,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();
