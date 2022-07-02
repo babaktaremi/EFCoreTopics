@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
@@ -34,6 +35,7 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
+        public virtual DbSet<PriceHistory> PriceHistories { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -795,6 +797,13 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
 
+            modelBuilder.Entity<PriceHistory>(entity =>
+            {
+                entity.Property(c => c.ProductName).HasMaxLength(256);
+                entity.HasIndex(c => c.ProductName);
+                entity.HasKey(c => c.Id);
+            });
+
             #region Performing Custom Query
 
             modelBuilder.Entity<GetCityAndProvinceFromAddressModel>(e =>
@@ -809,6 +818,16 @@ namespace EFCoreTopics.Database.Data
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        public async IAsyncEnumerable<PriceHistory> GetPricesWithStreaming([EnumeratorCancellation] CancellationToken token=default,int skipCount=0)
+        {
+            var priceHistories = this.PriceHistories.AsNoTracking().Skip(skipCount).AsAsyncEnumerable();
+
+           await foreach (var priceHistory in priceHistories.WithCancellation(token))
+           {
+               yield return priceHistory;
+           }
+        }
 
         #region RawSqlQueries
 

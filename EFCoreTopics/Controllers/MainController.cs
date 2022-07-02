@@ -1,6 +1,8 @@
 ﻿using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreTopics.Controllers
 {
@@ -9,10 +11,11 @@ namespace EFCoreTopics.Controllers
     public class MainController : ControllerBase
     {
         private readonly AdventureWorksLContext _db;
-
-        public MainController(AdventureWorksLContext db)
+        private readonly ILogger<MainController> _logger;
+        public MainController(AdventureWorksLContext db, ILogger<MainController> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         #region Raw Sql Queries
@@ -50,5 +53,50 @@ namespace EFCoreTopics.Controllers
         }
 
         #endregion
+
+        [HttpPost("AddPriceHistory")]
+        public async Task<IActionResult> AddSomePriceHistory()
+        {
+            var priceHistories = new List<PriceHistory>();
+            
+            int iteration=0;
+            var priceDate = DateTime.Now;
+
+            var random = new Random();
+
+            while (iteration<20000)
+            {
+                priceHistories.Add(new PriceHistory(){ProductName = "PS 5",Date = priceDate,RecordedPrice =random.Next(20_000_000,23_000_000) });
+                priceDate = priceDate.AddDays(1);
+                iteration++;
+            }
+
+            _db.PriceHistories.AddRange(priceHistories);
+            await _db.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("WithStreaming")]
+        public async Task<IActionResult> TestWithStreaming(CancellationToken cancellationToken)
+        {
+
+            await foreach (var item in _db.GetPricesWithStreaming(cancellationToken))
+                _logger.LogWarning($"Product With Id {item.Id} is Yield");
+
+            return Ok();
+        }
+
+        [HttpGet("WithoutStreaming")]
+        public async Task<IActionResult> TestWithoutStreaming(CancellationToken cancellationToken)
+        {
+            var priceHistory = await _db.PriceHistories.AsNoTracking().ToListAsync(cancellationToken);
+
+            foreach (var history in priceHistory)
+            {
+                _logger.LogWarning($"Some Id {history.Id}");
+            }
+
+            return Ok();
+        }
     }
 }

@@ -1,0 +1,10 @@
+﻿@page "/StreamData"
+<PageTitle>Stream Data</PageTitle>
+
+
+<Chart Config="_chartConfig" @ref="_lineChartJs"></Chart>
+
+<button class="btn btn-primary" @onclick="RequestPrices">Get Prices</button>
+<button class="btn btn-warning" @onclick="PauseStreaming">Pause Streaming</button>
+<button class="btn btn-danger" @onclick="ResetStreaming">Reset Streaming</button>
+
