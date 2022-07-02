@@ -5,13 +5,14 @@ using ChartJs.Blazor.Common;
 using ChartJs.Blazor.Common.Axes;
 using ChartJs.Blazor.Common.Axes.Ticks;
 using ChartJs.Blazor.Common.Enums;
+using ChartJs.Blazor.Common.Handlers;
 using ChartJs.Blazor.Common.Time;
+using ChartJs.Blazor.Interop;
 using ChartJs.Blazor.LineChart;
 using ChartJs.Blazor.Util;
-using MessagePack;
-using MessagePack.Formatters;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json.Linq;
 using StreamingClient.Models;
 
 namespace StreamingClient.Pages
@@ -51,11 +52,12 @@ namespace StreamingClient.Pages
                 Options = new LineOptions
                 {
                     Responsive = true,
+                    Animation = new Animation() { Duration = 500, Easing = Easing.EaseInOutSine },
                     MaintainAspectRatio = true,
                     Title = new OptionsTitle
                     {
                         Display = true,
-                        Text = "ChartJs.Blazor Time Scale Chart"
+                        Text = "Product Price History"
                     },
                     Tooltips = new Tooltips
                     {
@@ -65,7 +67,7 @@ namespace StreamingClient.Pages
                     Hover = new Hover
                     {
                         Mode = InteractionMode.Nearest,
-                        Intersect = true
+                        Intersect = true,
                     },
                     Scales = new Scales
                     {
@@ -77,10 +79,22 @@ namespace StreamingClient.Pages
                                 {
                                     LabelString = "Date"
                                 },
+                                Ticks = new TimeTicks()
+                                {
+                                    Display = true,
+                                    AutoSkip = true
+                                },
                                 Time = new TimeOptions
                                 {
-                                    TooltipFormat = "ll HH:mm"
+                                    TooltipFormat = "ll HH:mm",
+                                    Unit = TimeMeasurement.Day,
+                                    MinUnit = TimeMeasurement.Day,
+                                    StepSize = 20
                                 },
+                                Bounds = ScaleBound.Ticks,
+                                Offset = true,
+                                Display = AxisDisplay.Auto,
+                                Weight = 20,
                             }
                         },
                         YAxes = new List<CartesianAxis>
@@ -104,8 +118,10 @@ namespace StreamingClient.Pages
                 Fill = FillingMode.Disabled,
                 ShowLine = true,
                 Label = "Price History Over Time",
+                HoverBorderCapStyle = BorderCapStyle.Square
             };
         }
+
 
         private async Task InitializeSignalR()
         {
@@ -121,8 +137,8 @@ namespace StreamingClient.Pages
 
         private async Task UpdateDataChart(StreamingHubModel model)
         {
-           
-            _data.Add(new TimePoint(model.PriceTime,(double)model.PriceValue));
+
+            _data.Add(new TimePoint(model.PriceTime, (double)model.PriceValue));
 
             await InvokeAsync(async () =>
             {
@@ -138,13 +154,13 @@ namespace StreamingClient.Pages
         private async Task RequestPrices()
         {
             SetupCancellation();
-           var streamResult=  _hub.StreamAsync<StreamingHubModel>("RequestStream", _recordsReceived, cancellationToken: _cancellationTokenSource.Token);
+            var streamResult = _hub.StreamAsync<StreamingHubModel>("RequestStream", _recordsReceived, cancellationToken: _cancellationTokenSource.Token);
 
-           await foreach (var item in streamResult)
-           {
-               await UpdateDataChart(item);
-               _recordsReceived++;
-           }
+            await foreach (var item in streamResult)
+            {
+                await UpdateDataChart(item);
+                _recordsReceived++;
+            }
         }
 
         private void PauseStreaming()
