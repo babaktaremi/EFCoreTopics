@@ -40,7 +40,7 @@ namespace EFCoreTopics.Database.Data
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
+                //optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
             }
         }
 
@@ -439,6 +439,28 @@ namespace EFCoreTopics.Database.Data
                     .HasColumnName("rowguid")
                     .HasDefaultValueSql("(newid())")
                     .HasComment("ROWGUIDCOL number uniquely identifying the record. Used to support a merge replication sample.");
+
+            });
+
+            modelBuilder.Entity<SpecialProduct>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.Property(c => c.Name).HasMaxLength(100);
+                entity.Property(c => c.Id).UseHiLo("SpecialProductSequence");
+            });
+
+            modelBuilder.HasSequence("SpecialProductSequence", builder =>
+            {
+                builder.IncrementsBy(5);
+                builder.StartsAt(10);
+
+            });
+
+            modelBuilder.Entity<SpecialProductPrice>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.HasOne(c => c.SpecialProduct).WithMany(c => c.SpecialProductPrices)
+                    .HasForeignKey(c => c.SpecialProductId);
             });
 
             modelBuilder.Entity<ProductModel>(entity =>
@@ -466,7 +488,9 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.Rowguid)
                     .HasColumnName("rowguid")
                     .HasDefaultValueSql("(newid())");
+
             });
+
 
             modelBuilder.Entity<ProductModelProductDescription>(entity =>
             {

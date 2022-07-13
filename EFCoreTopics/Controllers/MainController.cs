@@ -1,4 +1,5 @@
 ﻿using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,5 +51,29 @@ namespace EFCoreTopics.Controllers
         }
 
         #endregion
+
+        [HttpPost("AddSpecialProducts")]
+        public async Task<IActionResult> AddSpecialProducts()
+        {
+            var specialProduct = new SpecialProduct()
+            {
+                Name = "SomeProduct",
+            };
+
+            await _db.AddAsync(specialProduct);
+
+            var specialProductPrice = new SpecialProductPrice()
+            {
+                PriceDate = DateTime.Now,
+                SpecialProductId = specialProduct.Id,
+                Price = 2000,
+            };
+
+            _db.Add(specialProductPrice);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
