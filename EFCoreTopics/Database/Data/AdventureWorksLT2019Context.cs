@@ -52,7 +52,9 @@ namespace EFCoreTopics.Database.Data
             modelBuilder.Entity<SharedWallet>(entity =>
             {
                 entity.Property(c => c.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
-                entity.Property(c => c.ConcurrencyStamp).IsConcurrencyToken();
+                // entity.Property(c => c.ConcurrencyStamp).IsConcurrencyToken();
+
+                entity.Property<byte[]>("TimeStamp").IsRowVersion(); //Using Shadow Property. It is useful when you don't want to concern domain models for handling database problems.
             });
 
             modelBuilder.Entity<Address>(entity =>
