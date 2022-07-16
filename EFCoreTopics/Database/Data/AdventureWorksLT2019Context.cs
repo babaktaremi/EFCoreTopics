@@ -34,19 +34,26 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
+        public virtual DbSet<SharedWallet> SharedWallets { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
+                //optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+            modelBuilder.Entity<SharedWallet>(entity =>
+            {
+                entity.Property(c => c.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
+                entity.Property(c => c.ConcurrencyStamp).IsConcurrencyToken();
+            });
 
             modelBuilder.Entity<Address>(entity =>
             {
