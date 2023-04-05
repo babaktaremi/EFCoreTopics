@@ -39,7 +39,7 @@ namespace EFCoreTopics.Database.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true");
+                optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true;Encrypt=false");
                 optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
             }
         }
