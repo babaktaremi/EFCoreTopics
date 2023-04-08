@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
+using EFCoreTopics.Database.Models.Tph;
 using EFCoreTopics.Database.QueryModels;
 
 namespace EFCoreTopics.Database.Data
@@ -34,6 +35,7 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VProductAndDescription> VProductAndDescriptions { get; set; } = null!;
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
+        public virtual DbSet<OrderTph> Orders { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -50,9 +52,11 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<Address>(entity =>
             {
-                entity.ToTable("Address", "SalesLT");
+                entity.ToTable("Address", "SalesLT", builder =>
+                {
+                    builder.HasComment("Street address information for customers.");
+                });
 
-                entity.HasComment("Street address information for customers.");
 
                 entity.HasIndex(e => e.Rowguid, "AK_Address_rowguid")
                     .IsUnique();
@@ -102,9 +106,11 @@ namespace EFCoreTopics.Database.Data
             {
                 entity.HasNoKey();
 
-                entity.ToTable("BuildVersion");
+                entity.ToTable("BuildVersion", builder =>
+                {
+                    builder.HasComment("Current version number of the AdventureWorksLT 2012 sample database. ");
+                });
 
-                entity.HasComment("Current version number of the AdventureWorksLT 2012 sample database. ");
 
                 entity.Property(e => e.DatabaseVersion)
                     .HasMaxLength(25)
@@ -128,9 +134,11 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<Customer>(entity =>
             {
-                entity.ToTable("Customer", "SalesLT");
+                entity.ToTable("Customer", "SalesLT", builder =>
+                {
+                    builder.HasComment("Customer information.");
+                });
 
-                entity.HasComment("Customer information.");
 
                 entity.HasIndex(e => e.Rowguid, "AK_Customer_rowguid")
                     .IsUnique();
@@ -205,9 +213,11 @@ namespace EFCoreTopics.Database.Data
                 entity.HasKey(e => new { e.CustomerId, e.AddressId })
                     .HasName("PK_CustomerAddress_CustomerID_AddressID");
 
-                entity.ToTable("CustomerAddress", "SalesLT");
+                entity.ToTable("CustomerAddress", "SalesLT", builder =>
+                {
+                    builder.HasComment("Cross-reference table mapping customers to their address(es).");
+                });
 
-                entity.HasComment("Cross-reference table mapping customers to their address(es).");
 
                 entity.HasIndex(e => e.Rowguid, "AK_CustomerAddress_rowguid")
                     .IsUnique();
@@ -247,9 +257,12 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<ErrorLog>(entity =>
             {
-                entity.ToTable("ErrorLog");
+                entity.ToTable("ErrorLog", buider =>
+                {
+                    buider.HasComment(
+                        "Audit table tracking errors in the the AdventureWorks database that are caught by the CATCH block of a TRY...CATCH construct. Data is inserted by stored procedure dbo.uspLogError when it is executed from inside the CATCH block of a TRY...CATCH construct.");
+                });
 
-                entity.HasComment("Audit table tracking errors in the the AdventureWorks database that are caught by the CATCH block of a TRY...CATCH construct. Data is inserted by stored procedure dbo.uspLogError when it is executed from inside the CATCH block of a TRY...CATCH construct.");
 
                 entity.Property(e => e.ErrorLogId)
                     .HasColumnName("ErrorLogID")
@@ -283,9 +296,11 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<Product>(entity =>
             {
-                entity.ToTable("Product", "SalesLT");
+                entity.ToTable("Product", "SalesLT", builder =>
+                {
+                    builder.HasComment("Products sold or used in the manfacturing of sold products.");
+                });
 
-                entity.HasComment("Products sold or used in the manfacturing of sold products.");
 
                 entity.HasIndex(e => e.Name, "AK_Product_Name")
                     .IsUnique();
@@ -375,9 +390,11 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<ProductCategory>(entity =>
             {
-                entity.ToTable("ProductCategory", "SalesLT");
+                entity.ToTable("ProductCategory", "SalesLT", builder =>
+                {
+                    builder.HasComment("High-level product categorization.");
+                });
 
-                entity.HasComment("High-level product categorization.");
 
                 entity.HasIndex(e => e.Name, "AK_ProductCategory_Name")
                     .IsUnique();
@@ -415,9 +432,11 @@ namespace EFCoreTopics.Database.Data
 
             modelBuilder.Entity<ProductDescription>(entity =>
             {
-                entity.ToTable("ProductDescription", "SalesLT");
+                entity.ToTable("ProductDescription", "SalesLT", builder =>
+                {
+                    builder.HasComment("Product descriptions in several languages.");
+                });
 
-                entity.HasComment("Product descriptions in several languages.");
 
                 entity.HasIndex(e => e.Rowguid, "AK_ProductDescription_rowguid")
                     .IsUnique();
@@ -721,7 +740,6 @@ namespace EFCoreTopics.Database.Data
 
                 entity.ToView("vProductAndDescription", "SalesLT");
 
-                entity.HasComment("Product names and descriptions. Product descriptions are provided in multiple languages.");
 
                 entity.Property(e => e.Culture)
                     .HasMaxLength(6)
@@ -742,7 +760,6 @@ namespace EFCoreTopics.Database.Data
 
                 entity.ToView("vProductModelCatalogDescription", "SalesLT");
 
-                entity.HasComment("Displays the content from each element in the xml column CatalogDescription for each product in the Sales.ProductModel table that has catalog data.");
 
                 entity.Property(e => e.Color).HasMaxLength(256);
 
@@ -794,6 +811,11 @@ namespace EFCoreTopics.Database.Data
 
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
+
+            modelBuilder.Entity<OrderTph>()
+                .HasDiscriminator<string>("OrderType")
+                .HasValue<OrderTph>("normal_order")
+                .HasValue<InternationalOrderTph>("international_order");
 
             #region Performing Custom Query
 
