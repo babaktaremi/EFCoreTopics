@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace EFCoreTopics.Database.Models.Tpc;
 
-namespace EFCoreTopics.Database.Models.Tph;
-
-public class InternationalOrderTph:OrderTph
+public class InternationalOrderTpc: BaseOrderTpc
 {
-    public InternationalOrderTph()
+    public override int TableNumber => 2;
+
+    public InternationalOrderTpc()
     {
         ShippingCode = new Random().NextInt64(1000, 10000000).ToString();
     }

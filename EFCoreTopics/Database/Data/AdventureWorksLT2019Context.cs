@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
+using EFCoreTopics.Database.Models.Tpc;
 using EFCoreTopics.Database.Models.Tph;
+using EFCoreTopics.Database.Models.Tpt;
 using EFCoreTopics.Database.QueryModels;
 
 namespace EFCoreTopics.Database.Data
@@ -36,13 +38,15 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<VProductModelCatalogDescription> VProductModelCatalogDescriptions { get; set; } = null!;
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
         public virtual DbSet<OrderTph> Orders { get; set; } = null!;
+        public virtual DbSet<OrderTpt> OrdersTpt { get; set; } = null!;
+        public virtual  DbSet<BaseOrderTpc>BaseOrdersTpc { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true;Encrypt=false");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Debug);
+                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Information);
             }
         }
 
@@ -812,10 +816,36 @@ namespace EFCoreTopics.Database.Data
                 entity.Property(e => e.Wheel).HasMaxLength(256);
             });
 
+            #region Tph
+
             modelBuilder.Entity<OrderTph>()
                 .HasDiscriminator<string>("OrderType")
                 .HasValue<OrderTph>("normal_order")
                 .HasValue<InternationalOrderTph>("international_order");
+
+            #endregion
+
+            #region Tpt
+
+            modelBuilder.Entity<OrderTpt>().ToTable("OrdersTpt");
+            modelBuilder.Entity<InternationalOrderTpt>().ToTable("InternationalOrdersTpt");
+
+            #endregion
+
+            #region Tpc
+
+            modelBuilder.Entity<BaseOrderTpc>().UseTpcMappingStrategy();
+
+            var orderTpcTableNumber = GetPropertyValue<OrderTpc, int>(nameof(OrderTpc.TableNumber)); //need to know last insterted row id
+            var internationalOrderTpcTableNumber = GetPropertyValue<InternationalOrderTpc, int>(nameof(InternationalOrderTpc.TableNumber));
+
+            var orderTpcTableIncrement = GetPropertyValue<OrderTpc, int>(nameof(OrderTpc.IncrementNumber));
+            var internationalOrderTpcIncrement = GetPropertyValue<InternationalOrderTpc, int>(nameof(InternationalOrderTpc.IncrementNumber));
+
+            modelBuilder.Entity<OrderTpc>().ToTable("OrdersTpc",builder => builder.Property(e => e.Id).UseIdentityColumn(orderTpcTableNumber, orderTpcTableIncrement));
+            modelBuilder.Entity<InternationalOrderTpc>().ToTable("InternationalOrdersTpc", builder => builder.Property(e => e.Id).UseIdentityColumn(internationalOrderTpcTableNumber, internationalOrderTpcIncrement));
+
+            #endregion
 
             #region Performing Custom Query
 
@@ -831,6 +861,23 @@ namespace EFCoreTopics.Database.Data
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        private TValue? GetPropertyValue<TEntity, TValue>(string propertyName)
+        {
+            var entityType = typeof(AdventureWorksLContext).Assembly
+                .GetExportedTypes().FirstOrDefault(c => c == typeof(TEntity) && c is { IsAbstract: false, IsClass: true });
+
+            if (entityType == null) 
+                return default(TValue);
+            
+            var entityObject = Activator.CreateInstance(entityType);
+
+            var propertyValue = entityObject?.GetType().GetProperty(propertyName)?.GetValue(entityObject, null);
+
+            if (propertyValue != null) return (TValue)propertyValue;
+
+            return default(TValue);
+        }
 
         #region RawSqlQueries
 

@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Database\Models\Tpc\" />
     <Folder Include="Database\Models\Tph\" />
-    <Folder Include="Database\Models\Tpt\" />
   </ItemGroup>
 
 </Project>

@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EFCoreTopics.Database.Models.Tph;
+namespace EFCoreTopics.Database.Models.Tpt;
 
-public class OrderTph
+public class OrderTpt
 {
-    public OrderTph()
+    public OrderTpt()
     {
         CreatedDate = DateTime.Now;
     }
@@ -13,4 +13,6 @@ public class OrderTph
     public string OrderName { get; set; }
     public string UserName { get; set; }
     public DateTime CreatedDate { get; set; }
+
+   
 }

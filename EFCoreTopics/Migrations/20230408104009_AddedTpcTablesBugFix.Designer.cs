@@ -4,6 +4,7 @@ using EFCoreTopics.Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCoreTopics.Migrations
 {
     [DbContext(typeof(AdventureWorksLContext))]
-    partial class AdventureWorksLContextModelSnapshot : ModelSnapshot
+    [Migration("20230408104009_AddedTpcTablesBugFix")]
+    partial class AddedTpcTablesBugFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -828,7 +831,49 @@ namespace EFCoreTopics.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EFCoreTopics.Database.Models.Tpc.BaseOrderTpc", b =>
+            modelBuilder.Entity("EFCoreTopics.Database.Models.Tpc.InternationalOrderTpc", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InternationalOrdersTpc", null, t =>
+                        {
+                            t.Property("Id")
+                                .HasAnnotation("SqlServer:IdentityIncrement", 4)
+                                .HasAnnotation("SqlServer:IdentitySeed", 2L)
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        });
+                });
+
+            modelBuilder.Entity("EFCoreTopics.Database.Models.Tpc.OrderTpc", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -849,9 +894,13 @@ namespace EFCoreTopics.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable((string)null);
-
-                    b.UseTpcMappingStrategy();
+                    b.ToTable("OrdersTpc", null, t =>
+                        {
+                            t.Property("Id")
+                                .HasAnnotation("SqlServer:IdentityIncrement", 2)
+                                .HasAnnotation("SqlServer:IdentitySeed", 1L)
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        });
                 });
 
             modelBuilder.Entity("EFCoreTopics.Database.Models.Tph.OrderTph", b =>
@@ -1086,44 +1135,6 @@ namespace EFCoreTopics.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable("GetCityAndProvinceFromAddressModels");
-                });
-
-            modelBuilder.Entity("EFCoreTopics.Database.Models.Tpc.InternationalOrderTpc", b =>
-                {
-                    b.HasBaseType("EFCoreTopics.Database.Models.Tpc.BaseOrderTpc");
-
-                    b.Property<string>("CityName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CountryName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.ToTable("InternationalOrdersTpc", null, t =>
-                        {
-                            t.Property("Id")
-                                .HasAnnotation("SqlServer:IdentityIncrement", 4)
-                                .HasAnnotation("SqlServer:IdentitySeed", 2L)
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-                        });
-                });
-
-            modelBuilder.Entity("EFCoreTopics.Database.Models.Tpc.OrderTpc", b =>
-                {
-                    b.HasBaseType("EFCoreTopics.Database.Models.Tpc.BaseOrderTpc");
-
-                    b.ToTable("OrdersTpc", null, t =>
-                        {
-                            t.Property("Id")
-                                .HasAnnotation("SqlServer:IdentityIncrement", 2)
-                                .HasAnnotation("SqlServer:IdentitySeed", 1L)
-                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-                        });
                 });
 
             modelBuilder.Entity("EFCoreTopics.Database.Models.Tph.InternationalOrderTph", b =>
