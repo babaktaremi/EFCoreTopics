@@ -1,4 +1,5 @@
 ﻿using EFCoreTopics.Database.Data;
+using EFCoreTopics.Database.Models;
 using EFCoreTopics.Database.Models.Tpc;
 using EFCoreTopics.Database.Models.Tph;
 using EFCoreTopics.Database.Models.Tpt;
@@ -215,6 +216,43 @@ namespace EFCoreTopics.Controllers
             }
 
             return NotFound();
+        }
+
+        #endregion
+
+        #region ContextStrategy
+
+        [HttpPost("AddTestProductCategory")]
+        public async Task<IActionResult> AddTestProductCategory()
+        {
+            var productCategory = new ProductCategory()
+            {
+                Name = $"TestProduct_{DateTime.Now}",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now,
+            };
+
+            _db.ProductCategories.Add(productCategory);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("RemoveLastProductCategory")]
+        public async Task<IActionResult> RemoveLastProductCategory()
+        {
+            var lastProductCategory = await _db.ProductCategories.OrderByDescending(c => c.ProductCategoryId)
+                .FirstOrDefaultAsync();
+
+            if (lastProductCategory == null)
+                return NotFound();
+
+            _db.ProductCategories.Remove(lastProductCategory);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
         }
 
         #endregion

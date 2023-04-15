@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Database\Models\Common\" />
     <Folder Include="Database\Models\Tpc\" />
     <Folder Include="Database\Models\Tph\" />
   </ItemGroup>

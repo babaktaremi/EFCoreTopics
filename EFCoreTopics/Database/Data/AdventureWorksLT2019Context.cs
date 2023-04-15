@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using EFCoreTopics.Database.Data.CustomStrategies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using EFCoreTopics.Database.Models;
+using EFCoreTopics.Database.Models.Common;
 using EFCoreTopics.Database.Models.Tpc;
 using EFCoreTopics.Database.Models.Tph;
 using EFCoreTopics.Database.Models.Tpt;
@@ -39,14 +41,20 @@ namespace EFCoreTopics.Database.Data
         public virtual DbSet<GetCityAndProvinceFromAddressModel> GetCityAndProvinceFromAddressModels { get; set; } = null!;
         public virtual DbSet<OrderTph> Orders { get; set; } = null!;
         public virtual DbSet<OrderTpt> OrdersTpt { get; set; } = null!;
-        public virtual  DbSet<BaseOrderTpc>BaseOrdersTpc { get; set; }
+        public virtual DbSet<BaseOrderTpc> BaseOrdersTpc { get; set; }
+        public virtual DbSet<DatabaseTransactions> DatabaseTransactions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true;Encrypt=false");
-                optionsBuilder.LogTo(Console.WriteLine,minimumLevel:LogLevel.Information);
+                optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=AdventureWorksLT2019;Integrated Security=true;Encrypt=false",
+                    dbOptions =>
+                    {
+                        dbOptions.ExecutionStrategy(dependencies =>
+                            new LogTransactionsStrategy(dependencies.CurrentContext.Context));
+                    });
+                optionsBuilder.LogTo(Console.WriteLine, minimumLevel: LogLevel.Information);
             }
         }
 
@@ -842,7 +850,7 @@ namespace EFCoreTopics.Database.Data
             var orderTpcTableIncrement = GetPropertyValue<OrderTpc, int>(nameof(OrderTpc.IncrementNumber));
             var internationalOrderTpcIncrement = GetPropertyValue<InternationalOrderTpc, int>(nameof(InternationalOrderTpc.IncrementNumber));
 
-            modelBuilder.Entity<OrderTpc>().ToTable("OrdersTpc",builder => builder.Property(e => e.Id).UseIdentityColumn(orderTpcTableNumber, orderTpcTableIncrement));
+            modelBuilder.Entity<OrderTpc>().ToTable("OrdersTpc", builder => builder.Property(e => e.Id).UseIdentityColumn(orderTpcTableNumber, orderTpcTableIncrement));
             modelBuilder.Entity<InternationalOrderTpc>().ToTable("InternationalOrdersTpc", builder => builder.Property(e => e.Id).UseIdentityColumn(internationalOrderTpcTableNumber, internationalOrderTpcIncrement));
 
             #endregion
@@ -867,9 +875,9 @@ namespace EFCoreTopics.Database.Data
             var entityType = typeof(AdventureWorksLContext).Assembly
                 .GetExportedTypes().FirstOrDefault(c => c == typeof(TEntity) && c is { IsAbstract: false, IsClass: true });
 
-            if (entityType == null) 
+            if (entityType == null)
                 return default(TValue);
-            
+
             var entityObject = Activator.CreateInstance(entityType);
 
             var propertyValue = entityObject?.GetType().GetProperty(propertyName)?.GetValue(entityObject, null);
@@ -894,7 +902,7 @@ namespace EFCoreTopics.Database.Data
                 $"Update [SalesLT].[Address] set [City]={city} where [AddressId]={addressId}");
 
         public async Task<List<GetCityAndProvinceFromAddressModel>> GetCitiesAndProvinceFromAddressAsync()
-            =>await this.GetCityAndProvinceFromAddressModels
+            => await this.GetCityAndProvinceFromAddressModels
                 .FromSqlRaw(
                     "Select [AddressID],[City],[StateProvince]  FROM [AdventureWorksLT2019].[SalesLT].[Address]")
                 .ToListAsync();
