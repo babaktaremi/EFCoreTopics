@@ -34,6 +34,7 @@ public class LogTransactionsStrategy:IExecutionStrategy
             strategy.Execute(() =>
             {
                 _currentDbContext.AddRange(changedEntities);
+                _currentDbContext.SaveChanges();
             });
         }
 

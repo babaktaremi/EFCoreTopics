@@ -220,7 +220,7 @@ namespace EFCoreTopics.Controllers
 
         #endregion
 
-        #region ContextStrategy
+        #region Execution Strategy
 
         [HttpPost("AddTestProductCategory")]
         public async Task<IActionResult> AddTestProductCategory()
